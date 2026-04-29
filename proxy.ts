@@ -5,14 +5,15 @@ const isProtectedRoute = createRouteMatcher(['/dashboard(.*)']);
 const isHomeRoute = createRouteMatcher(['/']);
 
 export default clerkMiddleware(async (auth, req) => {
-  const { userId } = await auth();
-
-  if (isProtectedRoute(req) && !userId) {
-    return NextResponse.redirect(new URL('/', req.url));
+  if (isProtectedRoute(req)) {
+    await auth.protect();
   }
 
-  if (isHomeRoute(req) && userId) {
-    return NextResponse.redirect(new URL('/dashboard', req.url));
+  if (isHomeRoute(req)) {
+    const { userId } = await auth();
+    if (userId) {
+      return NextResponse.redirect(new URL('/dashboard', req.url));
+    }
   }
 });
 
